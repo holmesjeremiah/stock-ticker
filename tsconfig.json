@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext", // 1. Changed from commonjs
+    "moduleResolution": "NodeNext", // 2. Changed from node
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "types": ["react", "react-dom"],
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "noImplicitAny": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "resolveJsonModule": true
+  }
+}
