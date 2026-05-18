@@ -59,10 +59,23 @@ export default function App() {
   }
 
   useEffect(() => {
-    getSP500Data().then((data: any) => {
-      setStocks(data);
-      //
-    });
+    const fetchStocks = async () => {
+      try {
+        const data: any = await getSP500Data();
+        setStocks(data);
+        console.log("Stocks updated:", new Date().toLocaleTimeString());
+      } catch (err) {
+        console.error("Failed to fetch stock data:", err);
+      }
+    };
+
+    // fetch immediately on load
+    fetchStocks();
+
+    // refresh every hour
+    const interval = setInterval(fetchStocks, 60 * 60 * 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const content = (
