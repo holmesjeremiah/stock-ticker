@@ -1,12 +1,12 @@
 import React, { use, useEffect, useState } from "react";
 import { BiUpArrowAlt } from "react-icons/bi";
 import { FaCaretDown, FaCaretUp } from "react-icons/fa";
+import { sp500csv } from "./sp500";
 
 export default function App() {
   const [stocks, setStocks] = useState([]);
   const googleSheetsUrl =
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vT2wp7h7IrBmCRAUmZP5n0s_wl6dnGarUGgKdtxsBi9ef6qUFECVkYm1b_3V9BcJbdrdumdyHQaRA55/pub?output=csv";
-
   function parseCSV(csvText: string) {
     const stocks = [];
     const lines = csvText.split("\n");
@@ -50,18 +50,37 @@ export default function App() {
     console.log("Successfully Parsed Stocks:", stocks);
     return stocks;
   }
-  async function getSP500Data() {
+  async function getInitialSP500Data() {
+    //const res = await fetch(googleSheetsUrl);
+    //const text = await res.text();
+    const csvText = sp500csv;
+
+    let stocks = parseCSV(sp500csv);
+    return stocks;
+  }
+
+  async function getRefreshedSP500Data() {
     const res = await fetch(googleSheetsUrl);
     const text = await res.text();
 
-    let stocks = parseCSV(text);
+    let stocks = parseCSV(sp500csv);
     return stocks;
   }
 
   useEffect(() => {
     const fetchStocks = async () => {
       try {
-        const data: any = await getSP500Data();
+        const data: any = await getInitialSP500Data();
+        setStocks(data);
+        console.log("Stocks updated:", new Date().toLocaleTimeString());
+      } catch (err) {
+        console.error("Failed to fetch stock data:", err);
+      }
+    };
+
+    const refreshStocks = async () => {
+      try {
+        const data: any = await getRefreshedSP500Data();
         setStocks(data);
         console.log("Stocks updated:", new Date().toLocaleTimeString());
       } catch (err) {
@@ -73,7 +92,7 @@ export default function App() {
     fetchStocks();
 
     // refresh every hour
-    const interval = setInterval(fetchStocks, 60 * 60 * 1000);
+    const interval = setInterval(refreshStocks, 60 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, []);
@@ -88,25 +107,46 @@ export default function App() {
             gap: "10px",
             color: "#fff",
             alignItems: "center",
+            fontWeight: "bold",
           }}
           key={stock.symbol}
         >
-          <span>{/*  stock.name */}</span>
-          <span>{stock.symbol}</span>
+          <span>{stock.name}</span>
+          <span>({stock.symbol})</span>
           {stock.changeDollar > 0 ? (
-            <FaCaretUp size={"50px"} style={{ color: "green" }} />
+            <FaCaretUp size="40px" style={{ color: "green" }} />
+          ) : stock.changeDollar < 0 ? (
+            <FaCaretDown size="40px" style={{ color: "red" }} />
           ) : (
-            <FaCaretDown size={"50px"} style={{ color: "red" }} />
+            <span style={{ fontSize: "40px", color: "gray" }}></span>
           )}
 
-          <span style={{ color: stock.changeDollar > 0 ? "green" : "red" }}>
+          <span
+            style={{
+              color:
+                stock.changeDollar > 0
+                  ? "green"
+                  : stock.changeDollar < 0
+                    ? "red"
+                    : "gray",
+            }}
+          >
             ${stock.price}
           </span>
           <span>
             {stock.changeDollar > 0 ? "+" : ""}
             {stock.changeDollar}
           </span>
-          <span style={{ color: stock.changeDollar > 0 ? "green" : "red" }}>
+          <span
+            style={{
+              color:
+                stock.changeDollar > 0
+                  ? "green"
+                  : stock.changeDollar < 0
+                    ? "red"
+                    : "gray",
+            }}
+          >
             {stock.changePercent}%
           </span>
         </div>
